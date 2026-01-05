@@ -5,7 +5,11 @@ from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.models.db.review_model import Review
+<<<<<<< HEAD
 from app.models.pydantics.base_model import BaseSchema
+=======
+from app.models.pydantics.base_pydantics import BaseSchema
+>>>>>>> f38e70b (Final Commit)
 from app.models.pydantics.review_pydantics import ReviewResponse, ReviewCreate, ReviewUpdate
 
 

@@ -11,9 +11,15 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.responses import JSONResponse
 
 from app.models.db.user_model import User
+<<<<<<< HEAD
 from app.models.pydantics.base_model import TokenResponse, TokenRequest, TokenPayload
 from app.models.pydantics.user_pydantics import UserResponse, UserCreate, UserLogin, ChangePasswordRequest
 from app.utils.util import create_access_token, create_refresh_token
+=======
+from app.models.pydantics.base_pydantics import TokenResponse, TokenRequest, TokenPayload
+from app.models.pydantics.user_pydantics import UserResponse, UserCreate, UserLogin, ChangePasswordRequest
+from app.utils.util import create_access_token, create_refresh_token,get_hashed_password
+>>>>>>> f38e70b (Final Commit)
 
 class UserService:
 
@@ -21,6 +27,33 @@ class UserService:
         self.db = db
         self.collection = self.db.users
 
+<<<<<<< HEAD
+=======
+    async def create_user(self, userRequest: UserCreate) -> TokenResponse:
+        email = await self.collection.find_one({'email': userRequest.email})
+        if email:
+            raise HTTPException(status_code=403, detail='Email already registered.')
+
+        user_dict = userRequest.model_dump()
+        # plain_password = get_hashed_password(user_dict['password'])
+        # user_dict['password'] = plain_password
+        user_dict['role'] = ['user']
+        user = User(**user_dict)
+        inserted = await self.collection.insert_one(user.model_dump())
+        token_request = TokenRequest(email=user.email, id=str(inserted.inserted_id))
+        return TokenResponse(
+            access_token=create_access_token(token_request),
+            refresh_token=create_refresh_token(token_request)
+        )
+
+    async def retrieve_user(self, user_id: str) -> UserResponse:
+        user = await self.collection.find_one({'_id': ObjectId(user_id)})
+        user = self.__replace_id(user)
+        if user['is_deleted']:
+            raise HTTPException(status_code=404, detail='User not found')
+        return UserResponse(**user)
+
+>>>>>>> f38e70b (Final Commit)
     async def retrieve_user_with_credentials(self, email, password):
         user_from_email = await self.collection.find_one({'email': email})
         if not user_from_email:
@@ -30,6 +63,7 @@ class UserService:
             raise HTTPException(status_code=401, detail='Invalid password.')
         return self.__replace_id(user_from_email)
 
+<<<<<<< HEAD
     async def create_user(self, userRequest: UserCreate) -> TokenResponse:
         email = await self.collection.find_one({'email': userRequest.email})
         if email:
@@ -44,6 +78,8 @@ class UserService:
             refresh_token=create_refresh_token(token_request)
         )
 
+=======
+>>>>>>> f38e70b (Final Commit)
     async def login_user(self, userRequest: UserLogin) -> TokenResponse:
         user_db = await self.collection.find_one({'email': userRequest.email})
         if not user_db:
@@ -56,6 +92,7 @@ class UserService:
             refresh_token=create_refresh_token(token_request)
         )
 
+<<<<<<< HEAD
     async def retrieve_user(self, user_id: str) -> UserResponse:
         user = await self.collection.find_one({'_id': ObjectId(user_id)})
         user = self.__replace_id(user)
@@ -63,6 +100,8 @@ class UserService:
             raise HTTPException(status_code=404, detail='User not found')
         return UserResponse(**user)
 
+=======
+>>>>>>> f38e70b (Final Commit)
     async def update_user(self, user_id, user):
         if not await self.collection.find_one({'_id': ObjectId(user_id)}):
             raise HTTPException(status_code=404, detail='User not found.')

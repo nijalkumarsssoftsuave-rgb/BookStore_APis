@@ -1,5 +1,6 @@
 import os
 from typing import Annotated
+<<<<<<< HEAD
 from datetime import datetime, timedelta
 from fastapi import Depends
 from fastapi.security import HTTPBasicCredentials, HTTPBasic
@@ -9,6 +10,16 @@ from app.models.pydantics.base_model import TokenRequest, TokenPayload
 from jose import jwt
 from passlib.context import CryptContext
 
+=======
+from datetime import datetime, timedelta,timezone
+from fastapi import Depends
+from fastapi.security import HTTPBasicCredentials, HTTPBasic
+from motor.motor_asyncio import AsyncIOMotorClient
+from app.database import get_db
+from app.models.pydantics.base_pydantics import TokenRequest, TokenPayload
+from jose import jwt
+from passlib.context import CryptContext
+>>>>>>> f38e70b (Final Commit)
 security = HTTPBasic()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -19,8 +30,13 @@ JWT_REFRESH_SECRET_KEY = os.environ['JWT_REFRESH_SECRET_KEY']
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+<<<<<<< HEAD
 
 def get_hashed_password(password: str) -> str:
+=======
+def get_hashed_password(password: str) -> str:
+    # print(password_context.hash(password))
+>>>>>>> f38e70b (Final Commit)
     return password_context.hash(password)
 
 
@@ -29,15 +45,27 @@ def verify_password(password: str, hashed_pass: str) -> bool:
 
 
 def create_access_token(subject: TokenRequest) -> str:
+<<<<<<< HEAD
     expires_delta = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode = {"exp": expires_delta, "email": subject.email, "id": subject.id, "token_type": "access_token"}
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, ALGORITHM)
+=======
+    expires_delta = datetime.now(tz = timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode = {"exp": expires_delta, "email": subject.email, "id": subject.id, "token_type": "access_token"}
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, ALGORITHM)
+    # print(encoded_jwt)
+>>>>>>> f38e70b (Final Commit)
     return encoded_jwt
 
 
 def create_refresh_token(subject: TokenRequest) -> str:
+<<<<<<< HEAD
     expires_delta = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+=======
+    expires_delta = datetime.now(tz=timezone.utc) + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+>>>>>>> f38e70b (Final Commit)
 
     to_encode = {"exp": expires_delta, "email": subject.email, "id": subject.id, "token_type": "refresh_token"}
     encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)

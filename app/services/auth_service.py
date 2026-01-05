@@ -10,9 +10,15 @@ class AuthService:
         self.collection = self.db.users
 
     async def create_user(self, user: UserCreate) -> UserResponse:
+<<<<<<< HEAD
         user_dict = user.dict()
         user = User(**user_dict)
         result = await self.collection.insert_one(user.dict())
+=======
+        user_dict = user.model_dump()
+        user = User(**user_dict)
+        result = await self.collection.insert_one(user.model_dump())
+>>>>>>> f38e70b (Final Commit)
         return await self.retrieve_user(str(result.inserted_id))
 
     async def retrieve_user(self, user_id: str) -> UserResponse:

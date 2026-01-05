@@ -1,7 +1,11 @@
 from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+<<<<<<< HEAD
 from app.models.pydantics.base_model import TokenPayload
+=======
+from app.models.pydantics.base_pydantics import TokenPayload
+>>>>>>> f38e70b (Final Commit)
 from app.utils.util import decode_jwt
 
 
