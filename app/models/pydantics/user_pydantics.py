@@ -18,28 +18,18 @@ class UserCreate(RequestSchema):
     phone_number: str = Field(None, examples=['+918856852123'])
     age: int = Field(..., examples=[25])
 
-<<<<<<< HEAD
 
-=======
->>>>>>> f38e70b (Final Commit)
 class UserLogin(RequestSchema):
     email: EmailStr = Field(..., examples=["test@gmail.com"])
     password: str = Field(..., examples=["password"])
 
-<<<<<<< HEAD
 
-=======
->>>>>>> f38e70b (Final Commit)
 class UserUpdate(RequestSchema):
     name: str = Field(None, examples=["Albert Joseph"])
     gender: str = Field(None, examples=['Male'])
     phone_number: str = Field(None, examples=['+918856852123'])
     age: int = Field(None, examples=[25])
 
-<<<<<<< HEAD
-
-=======
->>>>>>> f38e70b (Final Commit)
 class ChangePasswordRequest(RequestSchema):
     current_password: str = Field(..., examples=["old password"])
     new_password: str = Field(..., examples=["new password"])

@@ -9,7 +9,6 @@ auth_router = APIRouter(
     tags=['Auth']
 )
 
-
 @auth_router.post('/', status_code=201)
 async def create_user(user: UserCreate, db: AsyncIOMotorClient):
     service = AuthService(db)

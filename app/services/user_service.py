@@ -1,42 +1,35 @@
 import os
+from dotenv import load_dotenv
 import smtplib
 import time
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
 import pyotp
+from datetime import datetime,timezone
 from bson import ObjectId
 from fastapi import HTTPException
+from fastapi.concurrency import run_in_threadpool
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.responses import JSONResponse
-
 from app.models.db.user_model import User
-<<<<<<< HEAD
-from app.models.pydantics.base_model import TokenResponse, TokenRequest, TokenPayload
-from app.models.pydantics.user_pydantics import UserResponse, UserCreate, UserLogin, ChangePasswordRequest
-from app.utils.util import create_access_token, create_refresh_token
-=======
 from app.models.pydantics.base_pydantics import TokenResponse, TokenRequest, TokenPayload
 from app.models.pydantics.user_pydantics import UserResponse, UserCreate, UserLogin, ChangePasswordRequest
-from app.utils.util import create_access_token, create_refresh_token,get_hashed_password
->>>>>>> f38e70b (Final Commit)
+from app.utils.util import create_access_token, create_refresh_token,get_hashed_password,verify_password
+load_dotenv()
 
 class UserService:
-
     def __init__(self, db: AsyncIOMotorClient):
         self.db = db
         self.collection = self.db.users
 
-<<<<<<< HEAD
-=======
     async def create_user(self, userRequest: UserCreate) -> TokenResponse:
         email = await self.collection.find_one({'email': userRequest.email})
         if email:
             raise HTTPException(status_code=403, detail='Email already registered.')
-
         user_dict = userRequest.model_dump()
-        # plain_password = get_hashed_password(user_dict['password'])
-        # user_dict['password'] = plain_password
+        print(len(user_dict['password']))
+        plain_password = get_hashed_password(user_dict['password'])
+        user_dict['password'] = plain_password
         user_dict['role'] = ['user']
         user = User(**user_dict)
         inserted = await self.collection.insert_one(user.model_dump())
@@ -53,7 +46,6 @@ class UserService:
             raise HTTPException(status_code=404, detail='User not found')
         return UserResponse(**user)
 
->>>>>>> f38e70b (Final Commit)
     async def retrieve_user_with_credentials(self, email, password):
         user_from_email = await self.collection.find_one({'email': email})
         if not user_from_email:
@@ -63,45 +55,20 @@ class UserService:
             raise HTTPException(status_code=401, detail='Invalid password.')
         return self.__replace_id(user_from_email)
 
-<<<<<<< HEAD
-    async def create_user(self, userRequest: UserCreate) -> TokenResponse:
-        email = await self.collection.find_one({'email': userRequest.email})
-        if email:
-            raise HTTPException(status_code=403, detail='Email already registered.')
-        user_dict = userRequest.dict()
-        user_dict['role'] = ['user']
-        user = User(**user_dict)
-        inserted = await self.collection.insert_one(user.dict())
-        token_request = TokenRequest(email=user.email, id=str(inserted.inserted_id))
-        return TokenResponse(
-            access_token=create_access_token(token_request),
-            refresh_token=create_refresh_token(token_request)
-        )
-
-=======
->>>>>>> f38e70b (Final Commit)
     async def login_user(self, userRequest: UserLogin) -> TokenResponse:
         user_db = await self.collection.find_one({'email': userRequest.email})
         if not user_db:
             raise HTTPException(status_code=403, detail='Invalid user email.')
-        if user_db['password'] != userRequest.password:
+
+        if not verify_password(userRequest.password, user_db['password']):
             raise HTTPException(status_code=401, detail='Invalid password.')
+
         token_request = TokenRequest(email=userRequest.email, id=str(user_db['_id']))
         return TokenResponse(
             access_token=create_access_token(token_request),
             refresh_token=create_refresh_token(token_request)
         )
 
-<<<<<<< HEAD
-    async def retrieve_user(self, user_id: str) -> UserResponse:
-        user = await self.collection.find_one({'_id': ObjectId(user_id)})
-        user = self.__replace_id(user)
-        if user['is_deleted']:
-            raise HTTPException(status_code=404, detail='User not found')
-        return UserResponse(**user)
-
-=======
->>>>>>> f38e70b (Final Commit)
     async def update_user(self, user_id, user):
         if not await self.collection.find_one({'_id': ObjectId(user_id)}):
             raise HTTPException(status_code=404, detail='User not found.')
@@ -126,31 +93,51 @@ class UserService:
                                          {'$set': {'password': password_request.new_password}})
         return JSONResponse(status_code=201, content='User password updated.')
 
-    @staticmethod
+    # @staticmethod
+    # async def send_otp_email(email: str, otp: str):
+    #     smtp_server = "smtp.gmail.com"
+    #     smtp_port = 587
+    #     sender_email = os.getenv('EMAIL')
+    #     sender_password = os.getenv('PASSWORD')
+    #     if not sender_email or not sender_password:
+    #         raise HTTPException(status_code=500, detail='Email credentials not configured.')
+    #     message = MIMEMultipart()
+    #     message["From"] = sender_email
+    #     message["To"] = email
+    #     message["Subject"] = "OTP Verification"
+    #     body = f"Your OTP is {otp}"
+    #     message.attach(MIMEText(body, "plain"))
+    #     try:
+    #         with smtplib.SMTP(smtp_server, smtp_port) as server:
+    #             server.starttls()
+    #             server.login(sender_email, sender_password)
+    #             server.sendmail(sender_email, email, message.as_string())
+    #     except smtplib.SMTPException as e:
+    #         raise HTTPException(status_code=500, detail=f'Failed to send email: {str(e)}')
+
     async def send_otp_email(email: str, otp: str):
         smtp_server = "smtp.gmail.com"
         smtp_port = 587
-        sender_email = os.getenv('EMAIL')
-        sender_password = os.getenv('PASSWORD')
+        sender_email = os.getenv("EMAIL")
+        sender_password = os.getenv("PASSWORD")
 
         if not sender_email or not sender_password:
-            raise HTTPException(status_code=500, detail='Email credentials not configured.')
-
+            raise HTTPException(status_code=500, detail="Email credentials not configured.")
         message = MIMEMultipart()
         message["From"] = sender_email
         message["To"] = email
         message["Subject"] = "OTP Verification"
-        body = f"Your OTP is {otp}"
+        body = f"Your OTP is: {otp}"
         message.attach(MIMEText(body, "plain"))
-
-        # Send the email
-        try:
+        def send_mail():
             with smtplib.SMTP(smtp_server, smtp_port) as server:
                 server.starttls()
                 server.login(sender_email, sender_password)
                 server.sendmail(sender_email, email, message.as_string())
+        try:
+            await run_in_threadpool(send_mail)
         except smtplib.SMTPException as e:
-            raise HTTPException(status_code=500, detail=f'Failed to send email: {str(e)}')
+            raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 
     async def change_email(self, new_email: str, token: TokenPayload):
         user_db = await self.collection.find_one({'_id': ObjectId(token.id)})
@@ -167,20 +154,44 @@ class UserService:
         )
         return JSONResponse(status_code=201, content='OTP sent successfully.')
 
+    # async def verify_otp(self, otp: str, token: TokenPayload):
+    #     #     user_db = await self.collection.find_one({'_id': ObjectId(token.id)})
+    #     #     if not user_db:
+    #     #         raise HTTPException(status_code=403, detail='Invalid user.')
+    #     #     if user_db.get('otp') != str(otp):
+    #     #         raise HTTPException(status_code=401, detail='Invalid OTP.')
+    #     #
+    #     #     await self.collection.update_one(
+    #     #         {'_id': ObjectId(token.id)},
+    #     #         {'$set': {'email': user_db['temp_new_email']}, '$unset': {'temp_new_email': "", 'otp': ""}}
+    #     #     )
+    #     #     return JSONResponse(status_code=200, content='Email updated successfully.')
+
     async def verify_otp(self, otp: str, token: TokenPayload):
         user_db = await self.collection.find_one({'_id': ObjectId(token.id)})
         if not user_db:
             raise HTTPException(status_code=403, detail='Invalid user.')
+        if not user_db.get("otp"):
+            raise HTTPException(status_code=400, detail="No OTP found. Please request again.")
 
-        if user_db.get('otp') != str(otp):
+        if user_db.get("otp_expires_at") < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="OTP expired. Please request again.")
+
+        if not verify_password(otp, user_db["otp"]):
             raise HTTPException(status_code=401, detail='Invalid OTP.')
+
+        if not user_db.get("temp_new_email"):
+            raise HTTPException(status_code=400, detail="No pending email update found.")
 
         await self.collection.update_one(
             {'_id': ObjectId(token.id)},
-            {'$set': {'email': user_db['temp_new_email']}, '$unset': {'temp_new_email': "", 'otp': ""}}
+            {
+                '$set': {'email': user_db['temp_new_email']},
+                '$unset': {'temp_new_email': "", 'otp': "", 'otp_expires_at': ""}
+            }
         )
-        return JSONResponse(status_code=200, content='Email updated successfully.')
 
+        return JSONResponse(status_code=200, content="Email updated successfully.")
     async def update_user_role(self, user_id, role, user):
         user_detail = await self.collection.find_one({'_id': ObjectId(user.id)})
         if not user_detail:

@@ -8,10 +8,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.models.pydantics.search_pydantics import SearchBooks, BaseIdName, SearchAuthor, SearchCategory, SearchReview, \
     SearchUser
 
-<<<<<<< HEAD
-
-=======
->>>>>>> f38e70b (Final Commit)
 class SearchService:
     def __init__(self, db: AsyncIOMotorClient):
         self.db = db

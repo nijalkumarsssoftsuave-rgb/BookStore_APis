@@ -1,8 +1,4 @@
 from typing import List
-<<<<<<< HEAD
-
-=======
->>>>>>> f38e70b (Final Commit)
 from pydantic import BaseModel, Field
 
 

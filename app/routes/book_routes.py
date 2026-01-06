@@ -3,13 +3,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from motor.motor_asyncio import AsyncIOMotorClient
 
-<<<<<<< HEAD
-from app.database import get_database
-from app.models.pydantics.base_model import TokenPayload
-=======
 from app.database import get_db
 from app.models.pydantics.base_pydantics import TokenPayload
->>>>>>> f38e70b (Final Commit)
 from app.models.pydantics.book_pydantics import (
     BookCreate,
     BookUpdate,
@@ -24,11 +19,7 @@ book_router = APIRouter(prefix='/books', tags=['Books'])
 @book_router.get('/', response_model=List[BookResponse])
 async def retrieve_all_books(
         publish_category: str = Query("None", enum=['None', 'Published', 'Non-Published']),
-<<<<<<< HEAD
-        db: AsyncIOMotorClient = Depends(get_database)
-=======
         db: AsyncIOMotorClient = Depends(get_db)
->>>>>>> f38e70b (Final Commit)
 ):
     service = BookService(db)
     return await service.retrieve_books(publish_category)
@@ -38,11 +29,7 @@ async def retrieve_all_books(
 async def create_book(
         book: BookCreate,
         user: TokenPayload = Depends(JWTBearer()),
-<<<<<<< HEAD
-        db: AsyncIOMotorClient = Depends(get_database)
-=======
         db: AsyncIOMotorClient = Depends(get_db)
->>>>>>> f38e70b (Final Commit)
 ):
     service = BookService(db)
     return await service.create_book(book, user)
@@ -52,11 +39,8 @@ async def create_book(
 async def publish_book(
         book_id: str,
         user: TokenPayload = Depends(JWTBearer()),
-<<<<<<< HEAD
-        db: AsyncIOMotorClient = Depends(get_database)
-=======
+
         db: AsyncIOMotorClient = Depends(get_db)
->>>>>>> f38e70b (Final Commit)
 ):
     service = BookService(db)
     return await service.publish_book(book_id, user)
@@ -64,11 +48,7 @@ async def publish_book(
 
 @book_router.get('/{book_id}', response_model=BookResponse)
 async def retrieve_book(
-<<<<<<< HEAD
-        book_id: str, db: AsyncIOMotorClient = Depends(get_database)
-=======
         book_id: str, db: AsyncIOMotorClient = Depends(get_db)
->>>>>>> f38e70b (Final Commit)
 ):
     try:
         service = BookService(db)
@@ -84,11 +64,8 @@ async def update_book(
         book_id: str,
         book: BookUpdate,
         user: TokenPayload = Depends(JWTBearer()),
-<<<<<<< HEAD
-        db: AsyncIOMotorClient = Depends(get_database)
-=======
         db: AsyncIOMotorClient = Depends(get_db)
->>>>>>> f38e70b (Final Commit)
+
 ):
     try:
         service = BookService(db)
@@ -103,11 +80,8 @@ async def update_book(
 async def delete_book(
         book_id: str,
         user: TokenPayload = Depends(JWTBearer()),
-<<<<<<< HEAD
-        db: AsyncIOMotorClient = Depends(get_database)
-=======
+
         db: AsyncIOMotorClient = Depends(get_db)
->>>>>>> f38e70b (Final Commit)
 ):
     try:
         service = BookService(db)

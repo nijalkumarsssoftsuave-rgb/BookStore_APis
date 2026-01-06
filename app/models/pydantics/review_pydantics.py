@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-
 from pydantic import Field
-
-=======
-from pydantic import Field
->>>>>>> f38e70b (Final Commit)
 from app.models.pydantics.base_pydantics import CreateUpdateSchema, RequestSchema, BaseSchema
 
 

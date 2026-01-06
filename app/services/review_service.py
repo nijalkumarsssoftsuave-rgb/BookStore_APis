@@ -5,13 +5,10 @@ from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.models.db.review_model import Review
-<<<<<<< HEAD
-from app.models.pydantics.base_model import BaseSchema
-=======
-from app.models.pydantics.base_pydantics import BaseSchema
->>>>>>> f38e70b (Final Commit)
-from app.models.pydantics.review_pydantics import ReviewResponse, ReviewCreate, ReviewUpdate
 
+from app.models.pydantics.base_pydantics import BaseSchema,TokenPayload
+from app.models.pydantics.review_pydantics import ReviewResponse, ReviewCreate, ReviewUpdate
+from app.utils.util import decode_jwt
 
 class ReviewService:
     def __init__(self, db: AsyncIOMotorClient):
@@ -20,23 +17,64 @@ class ReviewService:
         self.user_collection = self.db.users
         self.book_collection = self.db.books
 
-    async def retrieve_reviews(self, user_id: str, book_id: str) -> List[ReviewResponse]:
-        result = self.collection.find({'book_id': book_id})
+    # async def retrieve_reviews(self, user_id: str, book_id: str) -> List[ReviewResponse]:
+    #     result = self.collection.find({'book_id': book_id})
+    #     reviews = []
+    #     async for review in result:
+    #         review = self.__replace_id(review)
+    #         review['created_by'] = await self.__get_user_detail(user_id)
+    #         review['book'] = await self.__get_book(book_id)
+    #         reviews.append(ReviewResponse(**review))
+    #     return reviews
+    async def retrieve_reviews(self, token: TokenPayload, book_id: str) -> List[ReviewResponse]:
+        result = self.collection.find({'book': book_id})  # ✅ correct field
         reviews = []
         async for review in result:
             review = self.__replace_id(review)
+            user_id = review['created_by']
+            book_id = review['book']
             review['created_by'] = await self.__get_user_detail(user_id)
             review['book'] = await self.__get_book(book_id)
             reviews.append(ReviewResponse(**review))
         return reviews
 
-    async def create_review(self, review: ReviewCreate, book_id: str, user_id: str) -> ReviewResponse:
-        review_dict = review.dict()
+    async def create_review(self, review: ReviewCreate, book_id: str, token: TokenPayload) -> ReviewResponse:
+        user_id = token.id
+
+        review_dict = review.model_dump()
         review_dict['created_by'] = user_id
         review_dict['book'] = book_id
+
         review = Review(**review_dict)
-        inserted = await self.collection.insert_one(review.dict())
+        inserted = await self.collection.insert_one(review.model_dump())
+
         return await self.retrieve_review(str(inserted.inserted_id))
+    #
+    # async def create_review(self, review: ReviewCreate, book_id: str, token: TokenPayload):
+    #     review_dict = review.model_dump()
+    #
+    #     review_dict['created_by'] = ObjectId(token.id)  # ✅ store as ObjectId
+    #     review_dict['book'] = ObjectId(book_id)  # ✅ store as ObjectId
+    #
+    #     review = Review(**review_dict)
+    #     inserted = await self.collection.insert_one(review.model_dump())
+    #
+    #     return await self.retrieve_review(str(inserted.inserted_id), book_id)
+
+
+    async def retrieve_review(self, review_id: str, book_id: str) -> ReviewResponse:
+        review = await self.collection.find_one({
+            '_id': ObjectId(review_id),
+            'book': ObjectId(book_id)  # 🔥 FIX
+        })
+        if not review:
+            raise HTTPException(status_code=404, detail="Review not found for this book")
+        review = self.__replace_id(review)
+        user_id = review['created_by']
+        book_id = review['book']
+        review['created_by'] = await self.__get_user_detail(user_id)
+        review['book'] = await self.__get_book(book_id)
+        return ReviewResponse(**review)
 
     async def retrieve_review(self, review_id: str) -> ReviewResponse:
         review = await self.collection.find_one({'_id': ObjectId(review_id)})
@@ -46,6 +84,8 @@ class ReviewService:
         review['created_by'] = await self.__get_user_detail(user_id)
         review['book'] = await self.__get_book(book_id)
         return ReviewResponse(**review)
+
+
 
     async def update_review(
             self,

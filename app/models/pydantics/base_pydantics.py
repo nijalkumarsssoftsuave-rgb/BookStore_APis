@@ -5,30 +5,24 @@ from pydantic import BaseModel, Field
 class RequestSchema(BaseModel):
     pass
 
-<<<<<<< HEAD
-
-=======
->>>>>>> f38e70b (Final Commit)
 class BaseSchema(BaseModel):
     id: str = Field(..., examples=['6683f946ec61bfa6a3c2d7c7'])
     name: str = Field(..., examples=["JK Rowling"])
 
 class CreateSchema(BaseModel):
     id: str = Field(...)
-<<<<<<< HEAD
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class CreateUpdateSchema(BaseModel):
     id: str = Field(...)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-=======
     created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=datetime.now)
+
 class CreateUpdateSchema(BaseModel):
     id: str = Field(...)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
->>>>>>> f38e70b (Final Commit)
 
 class TokenRequest(BaseModel):
     id: str

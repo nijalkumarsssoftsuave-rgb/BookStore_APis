@@ -2,11 +2,7 @@ from typing import List
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import HTTPException
 from app.models.db.publisher_model import Publisher
-<<<<<<< HEAD
-from app.models.pydantics.base_model import BaseSchema
-=======
 from app.models.pydantics.base_pydantics import BaseSchema
->>>>>>> f38e70b (Final Commit)
 from app.models.pydantics.publisher_pydantics import PublisherResponse, PublisherCreate, PublisherUpdate
 from bson import ObjectId
 

@@ -2,11 +2,8 @@ from pydantic import BaseModel, Field
 from typing import List
 from app.models.db.base_model import CreateUpdateSchema
 
-<<<<<<< HEAD
-class Review(CreateUpdateSchema):
-=======
+
 class User(CreateUpdateSchema):
->>>>>>> f38e70b (Final Commit)
     name: str = Field(...)
     email: str = Field(...)
     password: str = Field(...)

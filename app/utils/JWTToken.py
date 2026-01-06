@@ -1,11 +1,7 @@
 from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-<<<<<<< HEAD
-from app.models.pydantics.base_model import TokenPayload
-=======
 from app.models.pydantics.base_pydantics import TokenPayload
->>>>>>> f38e70b (Final Commit)
 from app.utils.util import decode_jwt
 
 
@@ -14,7 +10,6 @@ def verify_jwt(token: str, is_refresh: bool) -> TokenPayload:
     if payload:
         return TokenPayload(**payload)
     return TokenPayload()
-
 
 class JWTBearer(HTTPBearer):
     def __init__(self, auto_error: bool = True):
